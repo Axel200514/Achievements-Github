@@ -1,0 +1,68 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-height);
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  gap: 16px;
+}
+
+.main-content {
+  flex: 1;
+  padding: 0 24px 60px;
+  max-width: 1920px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.pins-masonry {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.pins-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .pins-masonry {
+    gap: 12px;
+  }
+  .pins-col {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 0 12px;
+    gap: 8px;
+    height: 54px;
+  }
+  .main-content {
+    padding: 0 8px 95px;
+  }
+  .pins-masonry {
+    gap: 8px;
+  }
+  .pins-col {
+    gap: 8px;
+  }
+}
