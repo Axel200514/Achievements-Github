@@ -455,4 +455,58 @@ export class PinService {
     };
   }
 
+  async getRelatedPins(pin, page = 1, limit = 8, excludeIds = null) {
+    if (!pin) return [];
+
+    const anchors = this.determinePinAnchors(pin);
+    const results = [];
+    const collectedIds = new Set(excludeIds ? [...excludeIds] : []);
+    collectedIds.add(pin.id);
+
+    const queryTags = [];
+    if (anchors.primaryCharacter) {
+      queryTags.push(anchors.primaryCharacter);
+    }
+    if (anchors.primarySeries && !queryTags.includes(anchors.primarySeries)) {
+      queryTags.push(anchors.primarySeries);
+    }
+    if (anchors.primaryArtist && !queryTags.includes(anchors.primaryArtist)) {
+      queryTags.push(anchors.primaryArtist);
+    }
+    for (const a of anchors.allAnchors) {
+      if (!queryTags.includes(a)) {
+        queryTags.push(a);
+      }
+    }
+    if (!queryTags.includes("waifu")) {
+      queryTags.push("waifu");
+    }
+    if (!queryTags.includes("solo")) {
+      queryTags.push("solo");
+    }
+    if (!queryTags.includes("1girl")) {
+      queryTags.push("1girl");
+    }
+
+    const fetchAmount = Math.max(12, limit * 2);
+
+    for (let i = 0; i < queryTags.length; i++) {
+      if (results.length >= limit) break;
+      const tag = queryTags[i];
+      const clean = tag.replace(/\s+/g, "_").replace(/[*]+/g, "");
+      const targetPage = page + (i * 2);
+      const url = `${API_CONFIG.safebooruProxyEndpoint}?tags=${encodeURIComponent(clean)}&page=${targetPage}&limit=${fetchAmount}`;
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4500);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const text = await res.text();
+          const safeText = (text || "").trim();
+          if (safeText.startsWith("[")) {
+            const data = JSON.parse(safeText);
+            if (Array.isArray(data) && data.length > 0) {
+  }
 }
