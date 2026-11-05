@@ -58,5 +58,51 @@ export class PinListComponent {
       this.initColumns();
     }
 
+    const colFragments = this.columns.map(() => document.createDocumentFragment());
+
+    pins.forEach((pin) => {
+      if (!pin || !pin.id) return;
+      if (this.renderedPins.some((p) => p.id === pin.id)) return;
+
+      this.renderedPins.push(pin);
+      const isSaved = this.savedService.isSaved(pin.id);
+      const cardNode = this.cardComponent.render(pin, isSaved, {
+        onClick: this.callbacks.onPinClick,
+        onToggleSave: (p) => this.savedService.toggleSave(p),
+        onShare: async (p) => {
+          const shareUrl = `${window.location.origin}${window.location.pathname}#pin=${encodeURIComponent(p.id)}`;
+          if (navigator.share && window.isSecureContext) {
+            try {
+              await navigator.share({
+                title: p.title || "Lotus Anime Art",
+                text: `Check out "${p.title}" on Lotus`,
+                url: shareUrl
+              });
+              showToast("Link shared!");
+              return;
+            } catch (err) {
+              if (err.name === "AbortError") return;
+            }
+          }
+          await copyToClipboard(shareUrl);
+          showToast("Link copied to clipboard!");
+        }
+      });
+
+      let shortest = 0;
+      for (let i = 1; i < this.columns.length; i++) {
+        if (this.columnHeights[i] < this.columnHeights[shortest]) {
+          shortest = i;
+        }
+      }
+
+      colFragments[shortest].appendChild(cardNode);
+      const ratio = pin.height && pin.width ? pin.height / pin.width : 1.33;
+      this.columnHeights[shortest] += ratio;
+    });
+
+    this.columns.forEach((col, idx) => {
+      col.appendChild(colFragments[idx]);
+    });
   }
 }
