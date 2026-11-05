@@ -79,4 +79,81 @@ export class PinService {
     return word;
   }
 
+  async translateQuery(query) {
+    const clean = (query || "").trim().toLowerCase();
+    if (!clean) return "";
+
+    if (this.translationCache.has(clean)) {
+      return this.translationCache.get(clean);
+    }
+
+    if (BOORU_SPECIAL[clean]) {
+      this.translationCache.set(clean, BOORU_SPECIAL[clean]);
+      return BOORU_SPECIAL[clean];
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=en&dt=t&q=${encodeURIComponent(clean)}`;
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const text = await res.text();
+        const data = JSON.parse(text);
+        if (data && data[0]) {
+          const raw = data[0].map((s) => s[0]).join("").replace(/[.,/#!$%^&*;:{}=\`~()]/g, "").trim().toLowerCase();
+          const resolved = BOORU_SPECIAL[raw] || raw;
+          if (resolved) {
+            this.translationCache.set(clean, resolved);
+            return resolved;
+          }
+        }
+      }
+    } catch {}
+
+    this.translationCache.set(clean, clean);
+    return clean;
+  }
+
+  buildTagCandidates(translated) {
+    const clean = (translated || "").trim().toLowerCase();
+    if (!clean) return [];
+
+    const candidates = new Set();
+    const tokens = clean.split(/[\s_]+/).filter(Boolean);
+    const underscored = tokens.join("_");
+    const spaced = tokens.join(" ");
+
+    candidates.add(underscored);
+    if (spaced !== underscored) {
+      candidates.add(spaced);
+    }
+
+    const singularTokens = tokens.map((t) => this.toSingular(t));
+    const singularUnderscored = singularTokens.join("_");
+    const singularSpaced = singularTokens.join(" ");
+
+    if (singularUnderscored !== underscored) {
+      candidates.add(singularUnderscored);
+    }
+    if (singularSpaced !== spaced && singularSpaced !== singularUnderscored) {
+      candidates.add(singularSpaced);
+    }
+
+    const wildcard = tokens.map((t) => (t.endsWith("*") ? t : `${t}*`)).join(" ");
+    candidates.add(wildcard);
+
+    if (tokens.length > 1) {
+      for (const t of tokens) {
+        if (t.length >= 3 && !["and", "the", "with", "for", "from"].includes(t)) {
+          candidates.add(t);
+        }
+      }
+    }
+
+    return Array.from(candidates);
+  }
+
 }
