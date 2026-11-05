@@ -48,5 +48,85 @@ export class PinModel {
     const preview = item.sample_url || item.file_url || item.preview_url || "";
     const formattedTags = rawTags.slice(0, 24).map((t) => ({
       label: t.replace(/_/g, " "),
+      query: t
+    }));
+
+    const src = (item.source || "").trim();
+    let authorName = item.artist ? (item.artist.startsWith("@") ? item.artist : `@${item.artist}`) : "";
+    let authorHref = `https://safebooru.org/index.php?page=post&s=view&id=${item.id}`;
+    let domain = "safebooru.org";
+
+    if (!authorName && (src.includes("twitter.com/") || src.includes("x.com/"))) {
+      const match = src.match(/(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/);
+      if (match && match[1] && match[1] !== "i") {
+        authorName = `@${match[1]}`;
+        authorHref = `https://x.com/${match[1]}`;
+        domain = "x.com";
+      }
+    } else if (!authorName && src.includes("bsky.app/profile/")) {
+      const match = src.match(/bsky\.app\/profile\/([^/?#]+)/);
+      if (match && match[1]) {
+        domain = "bsky.app";
+        authorHref = src;
+        if (!match[1].startsWith("did:plc:")) {
+          authorName = `@${match[1]}`;
+        }
+      }
+    } else if (!authorName && (src.includes("pixiv.net") || src.includes("pximg.net"))) {
+      domain = "pixiv.net";
+      authorName = "Pixiv Artist";
+      authorHref = src.startsWith("http") ? src : "https://www.pixiv.net";
+    } else if (!authorName && src.includes("artstation.com/")) {
+      const match = src.match(/artstation\.com\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        authorName = `@${match[1]}`;
+        authorHref = `https://www.artstation.com/${match[1]}`;
+        domain = "artstation.com";
+      }
+    } else if (!authorName && src.includes("deviantart.com/")) {
+      const match = src.match(/deviantart\.com\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        authorName = `@${match[1]}`;
+        authorHref = `https://www.deviantart.com/${match[1]}`;
+        domain = "deviantart.com";
+      }
+    } else if (!authorName && src.includes("lofter.com")) {
+      domain = "lofter.com";
+      const match = src.match(/https?:\/\/([a-zA-Z0-9_-]+)\.lofter\.com/);
+      if (match && match[1]) {
+        authorName = `@${match[1]}`;
+        authorHref = `https://${match[1]}.lofter.com`;
+      }
+    } else if (!authorName && item.owner && item.owner !== "danbooru") {
+      authorName = `@${item.owner}`;
+    }
+
+    if (!authorName) {
+      const explicitArtistTag = filteredTags.find((t) => t.endsWith("_(artist)"));
+      const candidateArtistTag = explicitArtistTag || filteredTags.find((t) => t !== characterTag && !t.includes(":") && t !== "triforce");
+      if (candidateArtistTag) {
+        const cleanArtist = candidateArtistTag.replace(/_\(artist\)$/, "");
+        authorName = `@${cleanArtist}`;
+        authorHref = `https://safebooru.org/index.php?page=post&s=list&tags=${encodeURIComponent(cleanArtist)}`;
+      } else {
+        authorName = "Digital Artist";
+        domain = "Digital Illustration";
+      }
+    }
+
+    return new PinModel({
+      id: `sb_${item.id}`,
+      title: cleanTitle,
+      previewUrl: preview,
+      fullUrl: full,
+      width: Number(item.width) || 1200,
+      height: Number(item.height) || 1600,
+      tags: formattedTags,
+      author: authorName,
+      authorHref: authorHref,
+      source: src || authorHref,
+      sourceDomain: domain,
+      createdAt: item.change ? new Date(item.change * 1000).toISOString() : new Date().toISOString()
+    });
   }
 }
