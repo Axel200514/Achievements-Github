@@ -218,3 +218,113 @@
   color: var(--text-primary);
   cursor: pointer;
   flex-shrink: 0;
+  will-change: transform;
+  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-spring), border-color var(--transition-fast);
+}
+
+.explore-back-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.08);
+}
+
+.explore-back-btn:active {
+  transform: scale(0.88);
+  transition: transform var(--transition-press);
+}
+
+.explore-topic-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+@media (max-width: 1024px) {
+  .explore-container {
+    padding: 16px 12px 60px;
+    gap: 28px;
+  }
+  .boards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .board-collage {
+    height: 150px;
+  }
+  .popular-row {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .explore-container {
+    padding: 10px 4px 95px;
+    gap: 22px;
+  }
+  .explore-section-subtitle {
+    font-size: 0.74rem;
+  }
+  .explore-section-title {
+    font-size: 1.15rem;
+  }
+  .explore-search-shortcut {
+    width: 32px;
+    height: 32px;
+  }
+  .boards-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 10px;
+    padding: 0 4px 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .boards-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .board-card {
+    flex: 0 0 250px;
+    max-width: 78vw;
+    scroll-snap-align: start;
+    padding: 8px;
+    border-radius: 14px;
+  }
+  .board-collage {
+    height: 135px;
+    gap: 3px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .board-title {
+    font-size: 0.92rem;
+  }
+  .board-author {
+    font-size: 0.76rem;
+  }
+  .board-stats {
+    font-size: 0.72rem;
+  }
+  .popular-row {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .popular-thumb-wrapper {
+    border-radius: 8px;
+  }
+  .popular-thumb-wrapper:nth-child(n+5) {
+    display: none;
+  }
+  .explore-topic-header {
+    padding: 8px 6px 14px;
+    gap: 10px;
+  }
+  .explore-back-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .explore-topic-title {
+    font-size: 1.1rem;
+  }
+}
