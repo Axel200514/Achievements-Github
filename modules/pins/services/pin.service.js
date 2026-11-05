@@ -508,5 +508,58 @@ export class PinService {
           if (safeText.startsWith("[")) {
             const data = JSON.parse(safeText);
             if (Array.isArray(data) && data.length > 0) {
+              const mapped = data.map((item) => PinModel.fromSafebooru(item));
+              for (const item of mapped) {
+                if (!collectedIds.has(item.id)) {
+                  collectedIds.add(item.id);
+                  results.push(item);
+                  if (results.length >= limit) break;
+                }
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+
+    if (results.length < limit) {
+      const fallbackOffset = (page * 2) + 12;
+      const fallbackUrl = `${API_CONFIG.safebooruProxyEndpoint}?tags=solo&page=${fallbackOffset}&limit=${fetchAmount}`;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4500);
+        const res = await fetch(fallbackUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const text = await res.text();
+          const safeText = (text || "").trim();
+          if (safeText.startsWith("[")) {
+            const data = JSON.parse(safeText);
+            if (Array.isArray(data) && data.length > 0) {
+              const mapped = data.map((item) => PinModel.fromSafebooru(item));
+              for (const item of mapped) {
+                if (!collectedIds.has(item.id)) {
+                  collectedIds.add(item.id);
+                  results.push(item);
+                  if (results.length >= limit) break;
+                }
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+
+    return results;
+  }
+
+  shuffle(array) {
+    if (!Array.isArray(array)) return [];
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 }
