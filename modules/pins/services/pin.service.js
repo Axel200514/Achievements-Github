@@ -211,4 +211,64 @@ export class PinService {
     return null;
   }
 
+  async getFeedPins(page = 1, limit = API_CONFIG.defaultLimit) {
+    const half = Math.max(6, Math.floor(limit / 2));
+    const pageA = (page * 2 - 1) + this.sessionOffset;
+    const pageB = (page * 2) + this.sessionOffset + 27;
+
+    const [batchA, batchB] = await Promise.allSettled([
+      this.fetchSafebooru("", pageA, half),
+      this.fetchSafebooru("", pageB, limit - half)
+    ]);
+
+    const listA = batchA.status === "fulfilled" ? batchA.value : [];
+    const listB = batchB.status === "fulfilled" ? batchB.value : [];
+    const seen = new Set();
+    const combined = [];
+
+    for (const item of [...listA, ...listB]) {
+      if (!this.sessionSeenIds.has(item.id) && !seen.has(item.id)) {
+        seen.add(item.id);
+        this.sessionSeenIds.add(item.id);
+        combined.push(item);
+      }
+    }
+
+    if (combined.length < limit) {
+      const extraPage = pageB + page + 5;
+      const fallback = await this.fetchSafebooru("", extraPage, limit);
+      for (const item of fallback) {
+        if (!this.sessionSeenIds.has(item.id) && !seen.has(item.id)) {
+          seen.add(item.id);
+          this.sessionSeenIds.add(item.id);
+          combined.push(item);
+          if (combined.length >= limit) break;
+        }
+      }
+    }
+
+    return {
+      pins: this.shuffle(combined),
+      hasNextPage: true,
+      totalPages: 99
+    };
+  }
+
+  async searchPins(query, page = 1, limit = API_CONFIG.defaultLimit) {
+    const effectivePage = page + (page === 1 ? (this.searchOffset || 0) : 0);
+    let safebooruResults = await this.fetchSafebooru(query, effectivePage, limit);
+
+    if (safebooruResults.length === 0 && effectivePage !== page) {
+      safebooruResults = await this.fetchSafebooru(query, page, limit);
+    }
+
+    const pins = this.shuffle(safebooruResults);
+
+    return {
+      pins,
+      hasNextPage: pins.length >= 6,
+      totalPages: 25
+    };
+  }
+
 }
