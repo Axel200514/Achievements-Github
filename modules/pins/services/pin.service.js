@@ -300,4 +300,83 @@ export class PinService {
     return result;
   }
 
+  async fetchSafebooru(query, page, limit) {
+    const raw = (query || "").trim().toLowerCase();
+    if (!raw) {
+      const url = `${API_CONFIG.safebooruProxyEndpoint}?tags=&page=${page}&limit=${limit}`;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5500);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const text = await res.text();
+          const safeText = (text || "").trim();
+          if (safeText.startsWith("[")) {
+            const data = JSON.parse(safeText);
+            if (Array.isArray(data) && data.length > 0) {
+              return data.map((item) => PinModel.fromSafebooru(item));
+            }
+          }
+        }
+      } catch {}
+      return [];
+    }
+
+    if (this.tagResolutionCache.has(raw)) {
+      const resolvedTag = this.tagResolutionCache.get(raw);
+      const url = `${API_CONFIG.safebooruProxyEndpoint}?tags=${encodeURIComponent(resolvedTag)}&page=${page}&limit=${limit}`;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5500);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const text = await res.text();
+          const safeText = (text || "").trim();
+          if (!safeText.startsWith("[")) {
+            this.tagResolutionCache.delete(raw);
+          } else {
+            const data = JSON.parse(safeText);
+            if (Array.isArray(data) && data.length > 0) {
+              return data.map((item) => PinModel.fromSafebooru(item));
+            }
+            this.tagResolutionCache.delete(raw);
+          }
+        }
+      } catch {}
+    }
+
+    const directCandidates = [raw];
+    if (raw.includes(" ")) {
+      directCandidates.unshift(raw.replace(/\s+/g, "_"));
+    } else if (raw.includes("_")) {
+      directCandidates.push(raw.replace(/_/g, " "));
+    }
+
+    for (const directTag of directCandidates) {
+      const directUrl = `${API_CONFIG.safebooruProxyEndpoint}?tags=${encodeURIComponent(directTag)}&page=${page}&limit=${limit}`;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5500);
+        const res = await fetch(directUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const text = await res.text();
+          const safeText = (text || "").trim();
+          if (safeText.startsWith("[")) {
+            const data = JSON.parse(safeText);
+            if (Array.isArray(data) && data.length > 0) {
+              this.tagResolutionCache.set(raw, directTag);
+              return data.map((item) => PinModel.fromSafebooru(item));
+            }
+          }
+        }
+      } catch {}
+    }
+
+  }
 }
