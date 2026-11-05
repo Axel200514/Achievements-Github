@@ -33,21 +33,29 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  will-change: transform;
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-spring), border-color var(--transition-fast);
 }
 
 .explore-search-shortcut:hover {
-  background-color: var(--brand-lotus);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.95), rgba(219, 39, 119, 0.9));
   color: #ffffff;
-  border-color: var(--brand-lotus);
-  transform: scale(1.08);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 14px rgba(236, 72, 153, 0.35);
+  transform: scale(1.12);
+}
+
+.explore-search-shortcut:active {
+  transform: scale(0.88);
+  transition: transform var(--transition-press);
 }
 
 .boards-grid {
@@ -57,18 +65,26 @@
 }
 
 .board-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 8px 24px rgba(0, 0, 0, 0.25);
+  border-radius: 20px;
   padding: 10px;
   cursor: pointer;
-  transition: transform var(--transition-fast), border-color var(--transition-fast);
+  will-change: transform;
+  transition: transform var(--transition-spring), border-color var(--transition-fast), background var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
 .board-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--brand-lotus);
+  transform: translateY(-3px) scale(1.01);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(236, 72, 153, 0.45);
+}
+
+.board-card:active {
+  transform: scale(0.97);
+  transition: transform var(--transition-press);
 }
 
 .board-collage {
@@ -92,206 +108,3 @@
   display: grid;
   grid-template-rows: 1fr 1fr;
   gap: 4px;
-  height: 100%;
-}
-
-.board-sub-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-}
-
-.board-meta {
-  padding: 0 4px;
-}
-
-.board-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.board-author {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.author-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background-color: var(--brand-lotus);
-  color: #ffffff;
-  font-size: 0.65rem;
-}
-
-.board-stats {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.popular-row {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-  cursor: pointer;
-}
-
-.popular-thumb-wrapper {
-  position: relative;
-  aspect-ratio: 2 / 3;
-  border-radius: 10px;
-  overflow: hidden;
-  background-color: var(--bg-card);
-  transition: transform var(--transition-fast);
-}
-
-.popular-thumb-wrapper:hover {
-  transform: scale(1.02);
-}
-
-.popular-thumb {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
-}
-
-.explore-topic-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 0 18px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.explore-back-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-full);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
-}
-
-.explore-back-btn:hover {
-  background-color: var(--bg-surface-hover);
-  color: #ffffff;
-  transform: scale(1.06);
-}
-
-.explore-topic-title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-@media (max-width: 1024px) {
-  .explore-container {
-    padding: 16px 12px 60px;
-    gap: 28px;
-  }
-  .boards-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-  .board-collage {
-    height: 150px;
-  }
-  .popular-row {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-  }
-}
-
-@media (max-width: 768px) {
-  .explore-container {
-    padding: 10px 4px 95px;
-    gap: 22px;
-  }
-  .explore-section-subtitle {
-    font-size: 0.74rem;
-  }
-  .explore-section-title {
-    font-size: 1.15rem;
-  }
-  .explore-search-shortcut {
-    width: 32px;
-    height: 32px;
-  }
-  .boards-grid {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 10px;
-    padding: 0 4px 8px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .boards-grid::-webkit-scrollbar {
-    display: none;
-  }
-  .board-card {
-    flex: 0 0 250px;
-    max-width: 78vw;
-    scroll-snap-align: start;
-    padding: 8px;
-    border-radius: 14px;
-  }
-  .board-collage {
-    height: 135px;
-    gap: 3px;
-    border-radius: 10px;
-    margin-bottom: 8px;
-  }
-  .board-title {
-    font-size: 0.92rem;
-  }
-  .board-author {
-    font-size: 0.76rem;
-  }
-  .board-stats {
-    font-size: 0.72rem;
-  }
-  .popular-row {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-  }
-  .popular-thumb-wrapper {
-    border-radius: 8px;
-  }
-  .popular-thumb-wrapper:nth-child(n+5) {
-    display: none;
-  }
-  .explore-topic-header {
-    padding: 8px 6px 14px;
-    gap: 10px;
-  }
-  .explore-back-btn {
-    width: 34px;
-    height: 34px;
-  }
-  .explore-topic-title {
-    font-size: 1.1rem;
-  }
-}
