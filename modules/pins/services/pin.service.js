@@ -271,4 +271,33 @@ export class PinService {
     };
   }
 
+  async getTopicPins(topic, page = 1, limit = API_CONFIG.defaultLimit) {
+    const cleanTopic = (topic || "").trim().toLowerCase();
+    const effectivePage = page + (this.topicOffset || 0);
+    const cacheKey = `topic_${cleanTopic}_${effectivePage}_${limit}`;
+
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
+    let results = await this.fetchSafebooru(cleanTopic, effectivePage, limit);
+    if (results.length === 0 && effectivePage !== page) {
+      results = await this.fetchSafebooru(cleanTopic, page, limit);
+    }
+
+    const pins = this.shuffle(results);
+
+    const result = {
+      pins,
+      hasNextPage: pins.length >= 6,
+      totalPages: 25
+    };
+
+    if (pins.length > 0) {
+      this.cache.set(cacheKey, result);
+    }
+
+    return result;
+  }
+
 }
