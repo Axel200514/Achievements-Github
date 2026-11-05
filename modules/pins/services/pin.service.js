@@ -156,4 +156,59 @@ export class PinService {
     return Array.from(candidates);
   }
 
+  async getPins(query = "", page = 1, limit = API_CONFIG.defaultLimit) {
+    const cleanQuery = query.trim().toLowerCase();
+    const cacheKey = `${cleanQuery}_${page}_${limit}`;
+
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
+    let result;
+    if (cleanQuery && cleanQuery.length >= 2) {
+      result = await this.searchPins(cleanQuery, page, limit);
+    } else {
+      result = await this.getFeedPins(page, limit);
+    }
+
+    if (result && Array.isArray(result.pins) && result.pins.length > 0) {
+      this.cache.set(cacheKey, result);
+    }
+
+    return result;
+  }
+
+  async getPinById(pinId) {
+    const cleanId = String(pinId || "").replace(/^sb_/, "").trim();
+    if (!cleanId) return null;
+
+    const cacheKey = `pin_${cleanId}`;
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
+    const url = `${API_CONFIG.safebooruProxyEndpoint}?tags=id:${encodeURIComponent(cleanId)}&limit=1`;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const text = await res.text();
+        const safeText = (text || "").trim();
+        if (safeText.startsWith("[")) {
+          const data = JSON.parse(safeText);
+          if (Array.isArray(data) && data.length > 0) {
+            const pin = PinModel.fromSafebooru(data[0]);
+            this.cache.set(cacheKey, pin);
+            return pin;
+          }
+        }
+      }
+    } catch {}
+
+    return null;
+  }
+
 }
