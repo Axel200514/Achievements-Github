@@ -5,6 +5,7 @@
   gap: 10px;
   overflow-x: auto;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .categories-bar::-webkit-scrollbar {
@@ -12,32 +13,45 @@
 }
 
 .category-chip {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 2px 8px rgba(0, 0, 0, 0.2);
   color: var(--text-secondary);
   padding: 8px 18px;
   border-radius: var(--radius-full);
   font-size: 0.88rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  cursor: pointer;
+  will-change: transform;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-spring);
 }
 
 .category-chip:hover {
-  background-color: var(--bg-surface-hover);
+  background: rgba(255, 255, 255, 0.14);
   color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px) scale(1.04);
+}
+
+.category-chip:active {
+  transform: scale(0.92);
+  transition: transform var(--transition-press);
 }
 
 .category-chip.active {
-  background-color: var(--brand-lotus);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.95), rgba(219, 39, 119, 0.9));
   color: #ffffff;
-  border-color: var(--brand-lotus);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45), 0 4px 20px rgba(236, 72, 153, 0.4);
+  animation: bubble-pop 320ms var(--ease-spring);
 }
 
 @media (max-width: 768px) {
   .categories-bar {
-    padding: 6px 12px;
-    gap: 6px;
+    padding: 8px 12px;
+    gap: 8px;
   }
   .category-chip {
     padding: 6px 14px;

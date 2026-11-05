@@ -1,12 +1,12 @@
 const TAG_POOL = [
   { label: "Neko", query: "neko" },
   { label: "Kitsune", query: "fox_ears" },
-  { label: "Ilustraciones", query: "waifu" },
-  { label: "Personajes", query: "solo" },
+  { label: "Illustrations", query: "waifu" },
+  { label: "Characters", query: "solo" },
   { label: "Genshin", query: "genshin_impact" },
   { label: "Cyberpunk", query: "cyberpunk" },
-  { label: "Fantasía", query: "fantasy" },
-  { label: "Paisajes", query: "scenery" },
+  { label: "Fantasy", query: "fantasy" },
+  { label: "Landscapes", query: "scenery" },
   { label: "Retro 90s", query: "retro" },
   { label: "Kimono", query: "kimono" },
   { label: "Samurai", query: "samurai" },
@@ -16,13 +16,13 @@ const TAG_POOL = [
   { label: "Gothic", query: "gothic" },
   { label: "Pastel Dream", query: "pastel" },
   { label: "Aesthetic", query: "aesthetic" },
-  { label: "Urbano", query: "urban" },
-  { label: "Nocturno", query: "night" },
-  { label: "Acuarelas", query: "watercolor" },
+  { label: "Urban", query: "urban" },
+  { label: "Night", query: "night" },
+  { label: "Watercolor", query: "watercolor" },
   { label: "Neon", query: "neon" },
-  { label: "Fondos", query: "wallpaper" },
+  { label: "Wallpapers", query: "wallpaper" },
   { label: "Manga", query: "manga" },
-  { label: "Chica Mágica", query: "magical" }
+  { label: "Magical Girl", query: "magical" }
 ];
 
 export class TagFilterComponent {
@@ -42,7 +42,7 @@ export class TagFilterComponent {
     allBtn.type = "button";
     allBtn.className = "category-chip active";
     allBtn.dataset.query = "";
-    allBtn.textContent = "Todos";
+    allBtn.textContent = "All";
     fragment.appendChild(allBtn);
 
     const isMobile = window.innerWidth <= 768;
