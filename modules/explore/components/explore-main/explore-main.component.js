@@ -26,7 +26,8 @@ export class ExploreMainComponent {
     const boardsSection = this.buildFeaturedBoards(boards);
     fragment.appendChild(boardsSection);
 
-    popularSections.forEach((section) => {
+    const validSections = popularSections.filter((s) => Array.isArray(s.thumbnails) && s.thumbnails.length >= 6);
+    validSections.forEach((section) => {
       const sectionNode = this.buildPopularSection(section);
       fragment.appendChild(sectionNode);
     });
@@ -43,7 +44,7 @@ export class ExploreMainComponent {
 
     const title = document.createElement("h2");
     title.className = "explore-section-title";
-    title.textContent = "Tendencias visuales de Lotus";
+    title.textContent = "Visual Trends on Lotus";
 
     header.appendChild(title);
     section.appendChild(header);
@@ -74,7 +75,7 @@ export class ExploreMainComponent {
 
       bTitle.textContent = board.title;
       bAuthorName.textContent = `${board.author} `;
-      stats.textContent = `${board.pinCount} Pines · Activo`;
+      stats.textContent = `${board.pinCount} Pins · Active`;
 
       card.addEventListener("click", () => {
         if (typeof this.onTopicSelect === "function") {
@@ -98,31 +99,35 @@ export class ExploreMainComponent {
     const row = clone.querySelector(".popular-row");
 
     titleText.textContent = item.title;
-    shortcutBtn.title = `Explorar ${item.title}`;
+    shortcutBtn.title = `Explore ${item.title}`;
 
     const thumbsFragment = document.createDocumentFragment();
 
-    item.thumbnails.forEach((src) => {
+    item.thumbnails.forEach((thumb) => {
       const thumbClone = this.thumbTemplate.content.cloneNode(true);
       const img = thumbClone.querySelector(".popular-thumb");
+
+      const src = typeof thumb === "string" ? thumb : thumb.url;
+      const w = typeof thumb === "object" ? Number(thumb.width) : 0;
+      const h = typeof thumb === "object" ? Number(thumb.height) : 0;
+
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.width = w || 240;
+      img.height = h || 320;
       img.src = src;
       img.alt = item.title;
+
       thumbsFragment.appendChild(thumbClone);
     });
 
     row.appendChild(thumbsFragment);
 
-    const triggerAction = () => {
+    section.addEventListener("click", () => {
       if (typeof this.onTopicSelect === "function") {
-        this.onTopicSelect(item.tag, item.title);
+        this.onTopicSelect(item.query, item.title);
       }
-    };
-
-    shortcutBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      triggerAction();
     });
-    row.addEventListener("click", triggerAction);
 
     return section;
   }
