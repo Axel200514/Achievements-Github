@@ -29,12 +29,10 @@ export class NavbarComponent {
   }
 
   setActive(route) {
+    const normalized = route === "explorar" ? "explore" : route === "guardados" ? "saved" : route;
     this.navButtons.forEach((btn) => {
-      if ((btn.dataset.route || "") === route) {
-        btn.classList.add("active");
-      } else {
-        btn.classList.remove("active");
-      }
+      const btnRoute = btn.dataset.route || "";
+      btn.classList.toggle("active", btnRoute === normalized || btnRoute === route);
     });
   }
 }

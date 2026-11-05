@@ -30,16 +30,16 @@ export class SavedListComponent {
 
     const title = document.createElement("h2");
     title.className = "empty-title";
-    title.textContent = "Aún no tienes pines guardados";
+    title.textContent = "No saved pins yet";
 
     const desc = document.createElement("p");
     desc.className = "empty-desc";
-    desc.textContent = "Haz clic en el botón 'Guardar' de cualquier pin para organizar tu colección privada aquí.";
+    desc.textContent = "Click the 'Save' button on any pin to start organizing your private collection here.";
 
     const exploreBtn = document.createElement("button");
     exploreBtn.type = "button";
     exploreBtn.className = "btn-primary mt-4";
-    exploreBtn.textContent = "Explorar arte";
+    exploreBtn.textContent = "Explore Art";
     exploreBtn.addEventListener("click", () => {
       if (typeof this.onExploreClick === "function") {
         this.onExploreClick();

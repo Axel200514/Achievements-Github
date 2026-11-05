@@ -24,8 +24,9 @@ export class AppRouter {
       return;
     }
 
-    if (rawHash.startsWith("explore?")) {
-      const params = new URLSearchParams(rawHash.slice("explore?".length));
+    if (rawHash.startsWith("explore?") || rawHash.startsWith("explorar?")) {
+      const qIndex = rawHash.indexOf("?");
+      const params = new URLSearchParams(rawHash.slice(qIndex + 1));
       const topic = params.get("topic") || "";
       const title = params.get("title") || topic;
       this.currentRoute = "explore-topic";
@@ -62,11 +63,14 @@ export class AppRouter {
       return;
     }
 
-    const route = rawHash || APP_ROUTES.home;
+    const normalized = rawHash === "explorar" ? "explore" : rawHash === "guardados" ? "saved" : rawHash;
+    const route = normalized || APP_ROUTES.home;
     this.currentRoute = route;
 
     if (typeof this.routes[route] === "function") {
       this.routes[route]();
+    } else if (typeof this.routes[rawHash] === "function") {
+      this.routes[rawHash]();
     } else if (typeof this.routes.default === "function") {
       this.routes.default(route);
     }
@@ -74,7 +78,14 @@ export class AppRouter {
 
   navigate(route) {
     const targetHash = route ? `#${route}` : "";
-    if (window.location.hash === targetHash || (window.location.hash === "" && targetHash === "")) {
+    if (!route) {
+      if (window.location.hash) {
+        history.pushState(null, "", window.location.pathname + window.location.search);
+      }
+      this.handleHashChange();
+      return;
+    }
+    if (window.location.hash === targetHash) {
       this.handleHashChange();
     } else {
       window.location.hash = targetHash;
