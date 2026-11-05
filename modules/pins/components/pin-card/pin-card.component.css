@@ -3,7 +3,8 @@
   cursor: pointer;
   position: relative;
   background-color: transparent;
-  transition: transform var(--transition-fast);
+  will-change: transform;
+  transition: transform var(--transition-spring);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -11,12 +12,18 @@
   transform: translateY(-2px);
 }
 
+.pin-card:active {
+  transform: scale(0.98);
+  transition: transform var(--transition-press);
+}
+
 .pin-media-wrapper {
   position: relative;
   width: 100%;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
   background-color: #171922;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .pin-image {
@@ -57,21 +64,29 @@
 }
 
 .pin-action-circle {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-full);
-  background-color: rgba(255, 255, 255, 0.94);
-  color: #111827;
+  background: rgba(20, 24, 32, 0.75);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 4px 12px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  will-change: transform;
+  transition: background-color var(--transition-fast), transform var(--transition-spring), border-color var(--transition-fast);
 }
 
 .pin-action-circle:hover {
-  background-color: #ffffff;
-  transform: scale(1.08);
+  background: rgba(35, 42, 56, 0.9);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: scale(1.10);
+}
+
+.pin-action-circle:active {
+  transform: scale(0.88);
+  transition: transform var(--transition-press);
 }
 
 .pin-meta {

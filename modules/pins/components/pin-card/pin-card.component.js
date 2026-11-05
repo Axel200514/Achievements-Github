@@ -12,13 +12,9 @@ export class PinCardComponent {
     const authorEl = clone.querySelector(".pin-author");
     const shareBtn = clone.querySelector(".pin-share-btn");
 
-    if (pin.width && pin.height && mediaWrapper) {
-      const ratio = Math.min(Math.max(pin.height / pin.width, 0.65), 1.75);
-      mediaWrapper.style.aspectRatio = `1 / ${ratio.toFixed(3)}`;
-    }
-
     img.referrerPolicy = "no-referrer";
     img.loading = "lazy";
+    img.decoding = "async";
     img.alt = pin.title;
     img.width = pin.width || 800;
     img.height = pin.height || 1000;
