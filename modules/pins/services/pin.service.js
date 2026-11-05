@@ -378,5 +378,81 @@ export class PinService {
       } catch {}
     }
 
+    const translated = await this.translateQuery(raw);
+    const candidates = this.buildTagCandidates(translated);
+
+    for (const tag of candidates) {
+      const url = `${API_CONFIG.safebooruProxyEndpoint}?tags=${encodeURIComponent(tag)}&page=${page}&limit=${limit}`;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5500);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) continue;
+        const text = await res.text();
+        const safeText = (text || "").trim();
+        if (!safeText.startsWith("[")) continue;
+        const data = JSON.parse(safeText);
+        if (Array.isArray(data) && data.length > 0) {
+          this.tagResolutionCache.set(raw, tag);
+          return data.map((item) => PinModel.fromSafebooru(item));
+        }
+      } catch {}
+    }
+
+    return [];
   }
+
+  determinePinAnchors(pin) {
+    const cleanTags = (pin.tags || [])
+      .map((t) => (typeof t === "object" && t.query ? t.query : t || "").trim().toLowerCase().replace(/\s+/g, "_"))
+      .filter((t) => t.length > 2 && !/^\d/.test(t) && !t.startsWith("&") && !ANCHOR_ATTR_REGEX.test(t));
+
+    const characterTags = [];
+    const seriesTags = [];
+    const themeTags = [];
+
+    for (const t of cleanTags) {
+      if (t.includes("(") && t.includes(")")) {
+        characterTags.push(t);
+        const match = t.match(/\(([^)]+)\)/);
+        if (match && match[1] && !seriesTags.includes(match[1])) {
+          seriesTags.push(match[1]);
+        }
+      } else if (t.includes("_")) {
+        themeTags.push(t);
+      }
+    }
+
+    let primaryArtist = null;
+    if (
+      pin.author &&
+      !pin.author.includes("Digital Artist") &&
+      !pin.author.includes("Visual Artist") &&
+      !pin.author.includes("Artista Digital") &&
+      !pin.author.includes("Artista Visual")
+    ) {
+      const cleanArtist = pin.author.replace(/^@/, "").trim().toLowerCase();
+      if (cleanArtist && cleanArtist !== "pixiv" && cleanArtist !== "danbooru") {
+        primaryArtist = cleanArtist;
+      }
+    }
+
+    const anchorsPool = [...seriesTags, ...characterTags, ...themeTags];
+    if (primaryArtist && !anchorsPool.includes(primaryArtist)) {
+      anchorsPool.unshift(primaryArtist);
+    }
+    if (anchorsPool.length === 0) {
+      anchorsPool.push("waifu");
+    }
+
+    return {
+      primarySeries: seriesTags[0] || null,
+      primaryCharacter: characterTags[0] || null,
+      primaryArtist: primaryArtist,
+      allAnchors: anchorsPool
+    };
+  }
+
 }
