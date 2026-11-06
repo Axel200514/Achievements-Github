@@ -328,5 +328,70 @@ export class ModalComponent {
     this.relatedPage += 1;
     await this.loadRelatedPins(this.activePin, false);
   }
+
+  renderRelatedPinsBatch(pins) {
+    const frags = this.relatedCols.map(() => document.createDocumentFragment());
+
+    pins.forEach((relPin) => {
+      let card;
+      let img;
+      if (this.relatedCardTemplate) {
+        const clone = this.relatedCardTemplate.content.cloneNode(true);
+        card = clone.querySelector(".modal-related-card");
+        img = clone.querySelector(".modal-related-img");
+      } else {
+        card = document.createElement("div");
+        card.className = "modal-related-card";
+        img = document.createElement("img");
+        img.className = "modal-related-img";
+        card.appendChild(img);
+      }
+
+      const rawRatio = relPin.height && relPin.width ? relPin.height / relPin.width : 1.333;
+      const ratio = Math.min(Math.max(rawRatio, 0.55), 1.85);
+
+      img.referrerPolicy = "no-referrer";
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.width = relPin.width || 400;
+      img.height = relPin.height || Math.round((relPin.width || 400) * ratio);
+      img.alt = relPin.title;
+
+      const onImageLoaded = () => {
+        img.classList.add("loaded");
+      };
+      img.addEventListener("load", onImageLoaded, { once: true });
+      img.src = relPin.previewUrl;
+
+      if (img.complete && img.naturalWidth > 0) {
+        onImageLoaded();
+      }
+
+      card.addEventListener("click", () => {
+        this.open(relPin, false, true);
+      });
+
+      const minIdx = this.colHeights.indexOf(Math.min(...this.colHeights));
+      frags[minIdx].appendChild(card);
+      this.colHeights[minIdx] += ratio;
+    });
+
+    this.relatedCols.forEach((col, idx) => {
+      col.appendChild(frags[idx]);
+    });
+  }
+
+  async loadRelatedPins(pin, isInitial = true) {
+    if (!this.relatedGrid) return;
+    if (isInitial) {
+      this.setupRelatedColumns();
+      this.renderedRelatedIds.clear();
+
+      if (this.relatedCache.has(pin.id)) {
+        const cached = this.relatedCache.get(pin.id);
+        this.relatedPage = cached.page;
+        this.hasMoreRelated = cached.hasMore;
+        cached.pins.forEach((p) => {
+          this.renderedRelatedIds.add(p.id);
   }
 }
