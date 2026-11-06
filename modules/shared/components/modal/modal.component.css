@@ -598,3 +598,58 @@ body.modal-open {
   }
   .modal-backdrop.open .modal-container {
     transform: none;
+  }
+  .toast-notification {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: rgba(22, 24, 29, 0.98);
+  }
+  .modal-media-col {
+    width: 100%;
+    padding: 0;
+    background-color: #0b0c0e;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    height: auto;
+    max-height: 70vh;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+  .modal-image {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    display: block;
+    object-fit: contain;
+    border-radius: 0;
+    touch-action: pan-y;
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: auto;
+  }
+  .modal-info-col {
+    width: 100%;
+    height: auto;
+    padding: 16px 16px 8px;
+    gap: 14px;
+    overflow: visible;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background-color: transparent;
+  }
+  .modal-info-col::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  .modal-top-actions {
+    padding-right: 0;
+    width: 100%;
+  }
+  .modal-action-btn {
+    width: 40px;
+    height: 40px;
