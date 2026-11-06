@@ -131,3 +131,67 @@ body.modal-open {
   border-radius: var(--radius-sm);
   display: block;
 }
+
+.modal-info-col {
+  width: 440px;
+  flex-shrink: 0;
+  height: auto;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  gap: 20px;
+  background-color: transparent;
+}
+
+.modal-info-col::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.modal-top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-icon-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22), 0 4px 12px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  will-change: transform;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-spring);
+}
+
+.modal-action-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.32);
+  transform: scale(1.08);
+}
+
+.modal-action-btn:active {
+  transform: scale(0.88);
+  transition: transform var(--transition-press);
+}
+
+.modal-action-btn.is-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
