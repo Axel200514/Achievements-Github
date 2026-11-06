@@ -458,5 +458,64 @@ export class ModalComponent {
       if (entry) entry.hasMore = false;
     } finally {
       this.isLoadingRelated = false;
+      if (this.relatedLoader) {
+        this.relatedLoader.classList.add("d-none");
+      }
+    }
+  }
+
+  resetModalScroll() {
+    if (this.backdrop) {
+      this.backdrop.scrollTop = 0;
+    }
+    if (this.infoCol) {
+      this.infoCol.scrollTop = 0;
+    }
+  }
+
+  updateSaveButton(isSaved) {
+    this.saveBtn.textContent = isSaved ? "Saved" : "Save";
+    this.saveBtn.classList.toggle("is-saved", isSaved);
+  }
+
+  close() {
+    if (!this.isOpen) return;
+    if (history.state && history.state.modalOpen) {
+      history.back();
+    } else {
+      this.closeInternal();
+    }
+  }
+
+  closeInternal() {
+    this.isOpen = false;
+    this.backdrop.classList.remove("open");
+    document.body.classList.remove("modal-open");
+    this.activePin = null;
+    this.pinStack = [];
+    this.renderedRelatedIds.clear();
+    this.relatedCache.clear();
+    this.resetModalScroll();
+
+    if (window.location.hash.startsWith("#pin=")) {
+      history.replaceState(null, document.title, window.location.pathname + window.location.search);
+    }
+  }
+
+  closeForNavigation() {
+    this.isOpen = false;
+    if (this.backdrop) {
+      this.backdrop.classList.remove("open");
+    }
+    document.body.classList.remove("modal-open");
+    this.activePin = null;
+    this.pinStack = [];
+    this.renderedRelatedIds.clear();
+    this.relatedCache.clear();
+    this.resetModalScroll();
+
+    if (history.state && history.state.modalOpen) {
+      history.replaceState(null, "");
+    }
   }
 }
