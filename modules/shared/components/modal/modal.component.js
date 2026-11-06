@@ -273,5 +273,60 @@ export class ModalComponent {
     this.sourceLink.title = `Visit original post on ${pin.sourceDomain}`;
 
     this.updateSaveButton(isSaved);
+
+    this.tagsContainer.textContent = "";
+    const fragment = document.createDocumentFragment();
+    const tagsToRender = (pin.tags || []).slice(0, 16);
+    tagsToRender.forEach((tagItem) => {
+      const label = typeof tagItem === "object" && tagItem.label ? tagItem.label : String(tagItem).replace(/_/g, " ");
+      const query = typeof tagItem === "object" && tagItem.query ? tagItem.query : String(tagItem);
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "modal-tag-chip";
+      chip.textContent = `#${label}`;
+      chip.dataset.query = query;
+      chip.addEventListener("click", () => {
+        this.closeForNavigation();
+        if (typeof this.onTagClick === "function") {
+          this.onTagClick(query);
+        }
+      });
+      fragment.appendChild(chip);
+    });
+    this.tagsContainer.appendChild(fragment);
+
+    if (this.scrollCue) {
+      this.scrollCue.classList.remove("hide");
+    }
+
+    this.relatedPage = 1;
+    this.hasMoreRelated = true;
+    this.loadRelatedPins(pin, true);
+    this.resetModalScroll();
+  }
+
+  setupRelatedColumns() {
+    if (!this.relatedGrid) return [];
+    const width = window.innerWidth;
+    const colCount = width > 900 ? 4 : width > 600 ? 3 : 2;
+    this.relatedGrid.textContent = "";
+    this.relatedCols = [];
+    this.colHeights = [];
+    for (let i = 0; i < colCount; i++) {
+      const col = document.createElement("div");
+      col.className = `modal-related-col modal-related-col-${i}`;
+      this.relatedGrid.appendChild(col);
+      this.relatedCols.push(col);
+      this.colHeights.push(0);
+    }
+    return this.relatedCols;
+  }
+
+  async loadNextRelatedBatch() {
+    if (!this.activePin || this.isLoadingRelated || !this.hasMoreRelated) return;
+    this.isLoadingRelated = true;
+    this.relatedPage += 1;
+    await this.loadRelatedPins(this.activePin, false);
+  }
   }
 }
