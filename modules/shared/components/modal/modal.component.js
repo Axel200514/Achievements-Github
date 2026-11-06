@@ -103,5 +103,61 @@ export class ModalComponent {
       if (!this.activePin) return;
       if (typeof this.onToggleSave === "function") {
         const isSaved = this.onToggleSave(this.activePin);
+        this.updateSaveButton(isSaved);
+        showToast(isSaved ? "Saved to Collections!" : "Removed from Collections");
+      }
+    });
+
+    this.downloadBtn.addEventListener("click", async (e) => {
+      if (!this.activePin) return;
+      e.preventDefault();
+      await this.downloadDirectly(this.activePin);
+    });
+
+    if (this.shareBtn) {
+      this.shareBtn.addEventListener("click", async (e) => {
+        if (!this.activePin) return;
+        e.preventDefault();
+        const pin = this.activePin;
+        const shareUrl = `${window.location.origin}${window.location.pathname}#pin=${encodeURIComponent(pin.id)}`;
+        const shareData = {
+          title: pin.title || "Lotus Anime Art",
+          text: `Check out "${pin.title}" on Lotus`,
+          url: shareUrl
+        };
+
+        if (navigator.share && window.isSecureContext) {
+          try {
+            await navigator.share(shareData);
+            showToast("Link shared!");
+            return;
+          } catch (err) {
+            if (err.name === "AbortError") return;
+          }
+        }
+
+        await copyToClipboard(shareUrl);
+        showToast("Link copied to clipboard!");
+      });
+    }
+  }
+
+  initSentinelObserver() {
+    if (!("IntersectionObserver" in window) || !this.sentinel) return;
+    this.sentinelObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry && entry.isIntersecting && this.isOpen && !this.isLoadingRelated && this.hasMoreRelated) {
+          this.loadNextRelatedBatch();
+        }
+      },
+      {
+        root: this.backdrop,
+        rootMargin: "500px 0px"
+      }
+    );
+    this.sentinelObserver.observe(this.sentinel);
+  }
+
   }
 }
