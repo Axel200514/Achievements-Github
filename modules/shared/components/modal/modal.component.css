@@ -40,3 +40,46 @@ body.modal-open {
 .modal-backdrop::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.38);
 }
+
+.modal-close-btn {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(22, 24, 30, 0.65);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.28), 0 8px 24px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  cursor: pointer;
+  will-change: transform;
+  transition: background-color var(--transition-fast), transform var(--transition-spring), border-color var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+  background: rgba(36, 40, 52, 0.85);
+  border-color: rgba(255, 255, 255, 0.32);
+  transform: scale(1.10);
+}
+
+.modal-close-btn:active {
+  transform: scale(0.88);
+  transition: transform var(--transition-press);
+}
+
+.modal-content-wrap {
+  width: min(1040px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin: 0 auto;
+  flex-shrink: 0;
+}
