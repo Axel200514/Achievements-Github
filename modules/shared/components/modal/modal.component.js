@@ -159,5 +159,54 @@ export class ModalComponent {
     this.sentinelObserver.observe(this.sentinel);
   }
 
+  async downloadDirectly(pin) {
+    if (!pin) return;
+    showToast("Downloading image...");
+    this.downloadBtn.classList.add("is-loading");
+
+    const ext = (pin.fullUrl || pin.previewUrl || "").split(".").pop().split("?")[0] || "png";
+    const filename = `${(pin.title || "lotus_pin").replace(/[^a-zA-Z0-9_-]/g, "_")}.${ext}`;
+    const targetUrl = pin.fullUrl || pin.previewUrl;
+    const proxyDownloadUrl = `${API_CONFIG.downloadProxyEndpoint}?url=${encodeURIComponent(targetUrl)}&filename=${encodeURIComponent(filename)}`;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const response = await fetch(proxyDownloadUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const blob = await response.blob();
+        this.triggerBlobDownload(blob, filename);
+        showToast("Download completed!");
+        this.downloadBtn.classList.remove("is-loading");
+        return;
+      }
+    } catch {}
+
+    const iframe = document.createElement("iframe");
+    iframe.className = "d-none";
+    iframe.src = proxyDownloadUrl;
+    document.body.appendChild(iframe);
+    setTimeout(() => {
+      if (iframe.parentNode) {
+        document.body.removeChild(iframe);
+      }
+    }, 6000);
+
+    showToast("Download completed!");
+    this.downloadBtn.classList.remove("is-loading");
   }
+
+  triggerBlobDownload(blob, filename) {
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  }
+
 }
