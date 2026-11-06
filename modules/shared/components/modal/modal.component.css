@@ -243,3 +243,55 @@ body.modal-open {
   color: var(--text-primary);
   line-height: 1.3;
 }
+
+.modal-author-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-author-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--brand-lotus);
+}
+
+.modal-author-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.modal-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  padding: 14px 18px;
+  border-radius: 18px;
+}
+
+.modal-meta-item {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.modal-meta-item strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.modal-tags-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
