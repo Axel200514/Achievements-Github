@@ -499,3 +499,43 @@ body.modal-open {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+@media (min-width: 769px) {
+  .toast-notification {
+    bottom: 32px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .modal-backdrop {
+    padding: 32px 16px 64px;
+  }
+  .modal-content-wrap {
+    width: 100%;
+  }
+  .modal-container {
+    width: 100%;
+    height: auto;
+    min-height: 500px;
+    border-radius: 24px;
+  }
+  .modal-media-col {
+    padding: 16px;
+    min-height: 500px;
+    height: auto;
+    align-self: stretch;
+  }
+  .modal-info-col {
+    width: 360px;
+    height: auto;
+    overflow: visible;
+    padding: 24px 20px;
+    gap: 16px;
+  }
+  .modal-related-grid {
+    gap: 12px;
+  }
+  .modal-related-col {
+    gap: 12px;
+  }
+}
