@@ -209,4 +209,69 @@ export class ModalComponent {
     setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
   }
 
+  open(pin, isSaved = false, pushToStack = true) {
+    if (!pin) return;
+
+    if (pushToStack) {
+      this.pinStack.push(pin);
+      history.pushState({ modalOpen: true, pinId: pin.id }, "");
+    }
+
+    if (!this.isOpen) {
+      this.isOpen = true;
+      document.body.classList.add("modal-open");
+      this.backdrop.classList.add("open");
+    }
+
+    this.renderPin(pin, isSaved);
+  }
+
+  renderPin(pin, isSaved = false) {
+    if (!pin) return;
+    this.activePin = pin;
+    this.seenPinIds.add(pin.id);
+
+    this.img.referrerPolicy = "no-referrer";
+    this.img.alt = pin.title;
+    this.img.src = pin.previewUrl;
+
+    if (pin.fullUrl && pin.fullUrl !== pin.previewUrl) {
+      const nativeImg = new Image();
+      nativeImg.referrerPolicy = "no-referrer";
+      nativeImg.onload = () => {
+        if (this.activePin && this.activePin.id === pin.id) {
+          this.img.src = pin.fullUrl;
+        }
+      };
+      nativeImg.src = pin.fullUrl;
+    }
+
+    this.title.textContent = pin.title;
+    this.author.textContent = pin.author;
+    if (pin.authorHref) {
+      this.author.href = pin.authorHref;
+      this.author.target = "_blank";
+      this.author.rel = "noopener noreferrer";
+      this.author.title = `View artist profile on ${pin.sourceDomain}`;
+    } else {
+      this.author.removeAttribute("href");
+    }
+
+    if (this.authorPlatform) {
+      this.authorPlatform.textContent = `Verified artist · ${pin.sourceDomain}`;
+    }
+    if (this.authorAvatar) {
+      this.authorAvatar.textContent = (pin.author || "A").replace(/^@/, "").charAt(0).toUpperCase();
+    }
+
+    this.dimensions.textContent = `${pin.width} × ${pin.height}`;
+    this.idEl.textContent = `#${pin.id.slice(0, 8)}`;
+
+    this.sourceLink.href = pin.source;
+    this.sourceLink.target = "_blank";
+    this.sourceLink.rel = "noopener noreferrer";
+    this.sourceLink.title = `Visit original post on ${pin.sourceDomain}`;
+
+    this.updateSaveButton(isSaved);
+  }
 }
