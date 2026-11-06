@@ -393,5 +393,70 @@ export class ModalComponent {
         this.hasMoreRelated = cached.hasMore;
         cached.pins.forEach((p) => {
           this.renderedRelatedIds.add(p.id);
+          this.seenPinIds.add(p.id);
+        });
+        if (this.relatedContainer) {
+          this.relatedContainer.classList.remove("d-none");
+        }
+        this.renderRelatedPinsBatch(cached.pins);
+        return;
+      }
+
+      this.relatedPage = 1;
+      this.hasMoreRelated = true;
+      this.relatedCache.set(pin.id, { pins: [], page: 1, hasMore: true });
+      if (this.relatedContainer) {
+        this.relatedContainer.classList.remove("d-none");
+      }
+    }
+
+    if (typeof this.fetchRelatedPins !== "function") return;
+    this.isLoadingRelated = true;
+    if (this.relatedLoader) {
+      this.relatedLoader.classList.remove("d-none");
+    }
+
+    try {
+      const related = await this.fetchRelatedPins(pin, this.relatedPage, 8, this.seenPinIds);
+      if (!Array.isArray(related) || related.length === 0) {
+        this.hasMoreRelated = false;
+        const entry = this.relatedCache.get(pin.id);
+        if (entry) entry.hasMore = false;
+        return;
+      }
+
+      const uniqueRelated = related.filter((relPin) => {
+        if (!relPin || !relPin.id || this.renderedRelatedIds.has(relPin.id)) return false;
+        this.renderedRelatedIds.add(relPin.id);
+        this.seenPinIds.add(relPin.id);
+        return true;
+      });
+
+      if (uniqueRelated.length === 0) {
+        if (this.relatedPage < 6) {
+          this.relatedPage += 1;
+          await this.loadRelatedPins(pin, false);
+        } else {
+          this.hasMoreRelated = false;
+          const entry = this.relatedCache.get(pin.id);
+          if (entry) entry.hasMore = false;
+        }
+        return;
+      }
+
+      const entry = this.relatedCache.get(pin.id);
+      if (entry) {
+        entry.pins.push(...uniqueRelated);
+        entry.page = this.relatedPage;
+        entry.hasMore = this.hasMoreRelated;
+      }
+
+      this.renderRelatedPinsBatch(uniqueRelated);
+    } catch {
+      this.hasMoreRelated = false;
+      const entry = this.relatedCache.get(pin.id);
+      if (entry) entry.hasMore = false;
+    } finally {
+      this.isLoadingRelated = false;
   }
 }
