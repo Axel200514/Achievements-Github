@@ -48,4 +48,60 @@ export class ModalComponent {
     this.initSentinelObserver();
   }
 
+  bindEvents() {
+    this.closeBtn.addEventListener("click", () => this.close());
+    this.backdrop.addEventListener("click", (e) => {
+      if (e.target === this.backdrop || e.target === this.wrap) {
+        this.close();
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.isOpen) {
+        this.close();
+      }
+    });
+
+    window.addEventListener("popstate", () => {
+      if (!this.isOpen) return;
+      if (this.pinStack.length > 1) {
+        this.pinStack.pop();
+        const prevPin = this.pinStack[this.pinStack.length - 1];
+        this.renderPin(prevPin, false);
+      } else {
+        this.pinStack = [];
+        this.closeInternal();
+      }
+    });
+
+    if (this.scrollCue) {
+      this.scrollCue.addEventListener("click", () => {
+        if (this.relatedContainer) {
+          this.relatedContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    }
+
+    const onScroll = () => {
+      if (!this.isOpen) return;
+      if (this.scrollCue) {
+        this.scrollCue.classList.toggle("hide", this.backdrop.scrollTop > 100);
+      }
+
+      if (this.isLoadingRelated || !this.hasMoreRelated) return;
+      const scrollRemaining = this.backdrop.scrollHeight - (this.backdrop.scrollTop + this.backdrop.clientHeight);
+      if (scrollRemaining < 650) {
+        this.loadNextRelatedBatch();
+      }
+    };
+
+    if (this.backdrop) {
+      this.backdrop.addEventListener("scroll", onScroll, { passive: true });
+    }
+
+    this.saveBtn.addEventListener("click", () => {
+      if (!this.activePin) return;
+      if (typeof this.onToggleSave === "function") {
+        const isSaved = this.onToggleSave(this.activePin);
+  }
 }
