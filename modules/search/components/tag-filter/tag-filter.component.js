@@ -1,40 +1,13 @@
-const TAG_POOL = [
-  { label: "Neko", query: "neko" },
-  { label: "Kitsune", query: "fox_ears" },
-  { label: "Illustrations", query: "waifu" },
-  { label: "Characters", query: "solo" },
-  { label: "Genshin", query: "genshin_impact" },
-  { label: "Cyberpunk", query: "cyberpunk" },
-  { label: "Fantasy", query: "fantasy" },
-  { label: "Landscapes", query: "scenery" },
-  { label: "Retro 90s", query: "retro" },
-  { label: "Kimono", query: "kimono" },
-  { label: "Samurai", query: "samurai" },
-  { label: "Kawaii", query: "kawaii" },
-  { label: "Vocaloid", query: "vocaloid" },
-  { label: "Sci-Fi", query: "scifi" },
-  { label: "Gothic", query: "gothic" },
-  { label: "Pastel Dream", query: "pastel" },
-  { label: "Aesthetic", query: "aesthetic" },
-  { label: "Urban", query: "urban" },
-  { label: "Night", query: "night" },
-  { label: "Watercolor", query: "watercolor" },
-  { label: "Neon", query: "neon" },
-  { label: "Wallpapers", query: "wallpaper" },
-  { label: "Manga", query: "manga" },
-  { label: "Magical Girl", query: "magical" }
-];
-
 export class TagFilterComponent {
   constructor(containerEl, onSelectTag) {
     this.containerEl = containerEl;
     this.onSelectTag = onSelectTag;
     this.chips = [];
-    this.renderRandomizedChips();
     this.init();
+    this.setTags([]);
   }
 
-  renderRandomizedChips() {
+  setTags(tags = []) {
     this.containerEl.textContent = "";
     const fragment = document.createDocumentFragment();
 
@@ -46,15 +19,14 @@ export class TagFilterComponent {
     fragment.appendChild(allBtn);
 
     const isMobile = window.innerWidth <= 768;
-    const shuffled = [...TAG_POOL].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, isMobile ? 6 : 14);
+    const items = tags.slice(0, isMobile ? 8 : 16);
 
-    selected.forEach((item) => {
+    items.forEach((item) => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "category-chip";
-      btn.dataset.query = item.query;
-      btn.textContent = item.label;
+      btn.dataset.query = item.query || item.tag || item;
+      btn.textContent = item.label || item.title || item;
       fragment.appendChild(btn);
     });
 
@@ -68,9 +40,8 @@ export class TagFilterComponent {
       if (!chip) return;
 
       this.setActiveChip(chip);
-      const tag = chip.dataset.query || "";
       if (typeof this.onSelectTag === "function") {
-        this.onSelectTag(tag);
+        this.onSelectTag(chip.dataset.query || "");
       }
     });
   }
