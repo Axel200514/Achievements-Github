@@ -308,6 +308,49 @@ class LotusApp {
           this.currentPage,
           API_CONFIG.defaultLimit
         );
+      } else if (this.currentMode === "search") {
+        result = await this.pinService.searchPins(
+          this.currentQuery,
+          this.currentPage,
+          API_CONFIG.defaultLimit
+        );
+      } else {
+        result = await this.pinService.getFeedPins(
+          this.currentPage,
+          API_CONFIG.defaultLimit
+        );
+      }
+
+      if (currentSeq !== this.fetchSeq) return;
+
+      const pins = result?.pins || [];
+      this.hasMore = Boolean(result?.hasNextPage);
+
+      if (reset && pins.length === 0) {
+        this.loader.showEmpty();
+        this.hasMore = false;
+        return;
+      }
+
+      this.loader.hideEmpty();
+      this.pinList.renderPins(pins);
+      this.currentPage += 1;
+
+      if (!this.hasMore) {
+        this.loader.showEnd();
+      }
+    } catch {
+      if (currentSeq !== this.fetchSeq) return;
+      if (reset) {
+        this.loader.showEmpty();
+      }
+    } finally {
+      if (currentSeq === this.fetchSeq) {
+        this.isLoading = false;
+        this.loader.hide();
+      }
+    }
   }
 }
-const app = new App();
+
+new LotusApp();
