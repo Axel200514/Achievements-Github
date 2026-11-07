@@ -128,6 +128,71 @@ class LotusApp {
     if (existing) {
       this.modal.open(existing, this.savedService.isSaved(existing.id));
       history.replaceState(null, document.title, window.location.pathname + window.location.search);
+      return;
+    }
+
+    try {
+      const pin = await this.pinService.getPinById(pinId);
+      if (pin) {
+        this.modal.open(pin, this.savedService.isSaved(pin.id));
+        history.replaceState(null, document.title, window.location.pathname + window.location.search);
+      }
+    } catch {}
+  }
+
+  initIntersectionObserver() {
+    if (!("IntersectionObserver" in window) || !this.sentinel) return;
+
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const isInfiniteScrollable = this.currentMode === "feed" || this.currentMode === "topic" || this.currentMode === "search";
+        if (entry.isIntersecting && !this.isLoading && this.hasMore && isInfiniteScrollable) {
+          if (this.modal && this.modal.isOpen) return;
+          this.fetchMorePins();
+        }
+      },
+      {
+        rootMargin: "300px 0px"
+      }
+    );
+
+    this.observer.observe(this.sentinel);
+  }
+
+  showFeedView() {
+    this.navbar.setActive(APP_ROUTES.home);
+    this.categoriesContainer.classList.remove("d-none");
+    if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
+    this.gridContainer.className = "pins-masonry";
+    this.currentQuery = "";
+    this.currentMode = "feed";
+    this.currentPage = 1;
+    this.hasMore = true;
+    this.searchBar.setValue("");
+    this.tagFilter.selectByTag("");
+    this.pinList.clear();
+    this.loader.hideEnd();
+    this.loader.hideEmpty();
+    this.pinService.resetSession();
+    this.fetchMorePins(true);
+  }
+
+  showHomeTopicView(topic) {
+    this.navbar.setActive(APP_ROUTES.home);
+    this.categoriesContainer.classList.remove("d-none");
+    if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
+    this.gridContainer.className = "pins-masonry";
+    this.currentQuery = topic;
+    this.currentMode = "topic";
+    this.currentPage = 1;
+    this.hasMore = true;
+    this.searchBar.setValue("");
+    this.tagFilter.selectByTag(topic);
+    this.pinList.clear();
+    this.loader.hideEnd();
+    this.loader.hideEmpty();
+    this.pinService.resetTopicSession();
   }
 }
 const app = new App();
