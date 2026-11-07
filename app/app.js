@@ -10,11 +10,14 @@ import { SavedListComponent } from "../modules/saved/components/saved-list/saved
 import { SearchBarComponent } from "../modules/search/components/search-bar/search-bar.component.js";
 import { TagFilterComponent } from "../modules/search/components/tag-filter/tag-filter.component.js";
 import { ExploreMainComponent } from "../modules/explore/components/explore-main/explore-main.component.js";
+import { ExploreService } from "../modules/explore/services/explore.service.js";
+import { StorageUtils } from "../modules/shared/utils/storage.utils.js";
 
 class LotusApp {
   constructor() {
     this.pinService = new PinService();
     this.savedService = new SavedService();
+    this.exploreService = new ExploreService();
 
     this.currentQuery = "";
     this.currentMode = "feed";
@@ -22,8 +25,10 @@ class LotusApp {
     this.isLoading = false;
     this.hasMore = true;
     this.fetchSeq = 0;
+    this.hasRenderedExplore = false;
 
     this.gridContainer = document.getElementById("pins-grid");
+    this.exploreView = document.getElementById("explore-view");
     this.template = document.getElementById("pin-card-template");
     this.categoriesContainer = document.getElementById("categories-bar");
     this.searchInput = document.getElementById("search-input");
@@ -61,8 +66,9 @@ class LotusApp {
     );
 
     this.exploreComponent = new ExploreMainComponent(
-      this.gridContainer,
-      (tag, title) => this.router.navigate(`explore?topic=${encodeURIComponent(tag)}&title=${encodeURIComponent(title || tag)}`)
+      this.exploreView,
+      (tag, title) => this.router.navigate(`explore?topic=${encodeURIComponent(tag)}&title=${encodeURIComponent(title || tag)}`),
+      this.exploreService
     );
 
     this.searchBar = new SearchBarComponent(
@@ -81,6 +87,8 @@ class LotusApp {
         }
       }
     );
+
+    this.loadDynamicTags();
 
     this.navbar = new NavbarComponent((route) => {
       this.router.navigate(route);
@@ -113,6 +121,11 @@ class LotusApp {
       pin: (pinId) => this.showPinModalById(pinId),
       default: () => this.showFeedView()
     });
+  }
+
+  setExploreViewVisible(isExplore) {
+    this.exploreView.classList.toggle("d-none", !isExplore);
+    this.gridContainer.classList.toggle("d-none", isExplore);
   }
 
   async showPinModalById(pinId) {
@@ -164,25 +177,37 @@ class LotusApp {
     this.navbar.setActive(APP_ROUTES.home);
     this.categoriesContainer.classList.remove("d-none");
     if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
-    this.gridContainer.className = "pins-masonry";
-    this.currentQuery = "";
-    this.currentMode = "feed";
-    this.currentPage = 1;
-    this.hasMore = true;
+    this.setExploreViewVisible(false);
     this.searchBar.setValue("");
     this.tagFilter.selectByTag("");
-    this.pinList.clear();
-    this.loader.hideEnd();
-    this.loader.hideEmpty();
-    this.pinService.resetSession();
-    this.fetchMorePins(true);
+
+    if (this.currentMode === "feed" && this.pinList.renderedPins.length > 0) {
+      return;
+    }
+
+    this.currentMode = "feed";
+    this.currentQuery = "";
+    this.currentPage = 1;
+    this.hasMore = true;
+
+    if (this.pinList.renderedPins.length === 0) {
+      this.loader.hideEnd();
+      this.loader.hideEmpty();
+      this.pinService.resetSession();
+      this.fetchMorePins(true);
+    }
   }
 
   showHomeTopicView(topic) {
     this.navbar.setActive(APP_ROUTES.home);
     this.categoriesContainer.classList.remove("d-none");
     if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
-    this.gridContainer.className = "pins-masonry";
+    this.setExploreViewVisible(false);
+
+    if (this.currentMode === "topic" && this.currentQuery === topic && this.pinList.renderedPins.length > 0) {
+      return;
+    }
+
     this.currentQuery = topic;
     this.currentMode = "topic";
     this.currentPage = 1;
@@ -206,7 +231,12 @@ class LotusApp {
         this.exploreTopicTitle.textContent = title || topic;
       }
     }
-    this.gridContainer.className = "pins-masonry";
+    this.setExploreViewVisible(false);
+
+    if (this.currentMode === "topic" && this.currentQuery === topic && this.pinList.renderedPins.length > 0) {
+      return;
+    }
+
     this.currentQuery = topic;
     this.currentMode = "topic";
     this.currentPage = 1;
@@ -224,7 +254,12 @@ class LotusApp {
     this.navbar.setActive(APP_ROUTES.home);
     this.categoriesContainer.classList.remove("d-none");
     if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
-    this.gridContainer.className = "pins-masonry";
+    this.setExploreViewVisible(false);
+
+    if (this.currentMode === "search" && this.currentQuery === query && this.pinList.renderedPins.length > 0) {
+      return;
+    }
+
     this.currentQuery = query;
     this.currentMode = "search";
     this.currentPage = 1;
@@ -244,15 +279,20 @@ class LotusApp {
     this.navbar.setActive(APP_ROUTES.explore);
     this.categoriesContainer.classList.add("d-none");
     if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
-    this.gridContainer.className = "explore-wrapper";
-    this.currentMode = null;
+    this.setExploreViewVisible(true);
+    this.currentMode = "explore";
     this.hasMore = false;
-    this.pinList.clear();
-    this.loader.show();
     this.loader.hideEnd();
     this.loader.hideEmpty();
-    await this.exploreComponent.render();
-    this.loader.hide();
+
+    if (!this.hasRenderedExplore) {
+      this.loader.show();
+      const rendered = await this.exploreComponent.render();
+      if (rendered) {
+        this.hasRenderedExplore = true;
+      }
+      this.loader.hide();
+    }
   }
 
   showSavedView() {
@@ -260,8 +300,8 @@ class LotusApp {
     this.navbar.setActive(APP_ROUTES.saved);
     this.categoriesContainer.classList.add("d-none");
     if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
-    this.gridContainer.className = "pins-masonry";
-    this.currentMode = null;
+    this.setExploreViewVisible(false);
+    this.currentMode = "saved";
     this.hasMore = false;
     this.pinList.clear();
     this.loader.hide();
@@ -272,10 +312,36 @@ class LotusApp {
   handleSearch(query) {
     const clean = (query || "").trim();
     if (clean) {
+      StorageUtils.addRecentSearch(clean);
       this.router.navigate(`search=${encodeURIComponent(clean)}`);
     } else {
       this.router.navigate(APP_ROUTES.home);
     }
+  }
+
+  async loadDynamicTags() {
+    try {
+      const data = await this.exploreService.getExploreData();
+      const tags = [];
+      if (Array.isArray(data.boards)) {
+        data.boards.forEach((b) => {
+          if (b.title && b.tag) {
+            tags.push({ label: b.title, query: b.tag });
+          }
+        });
+      }
+      if (Array.isArray(data.popularSections)) {
+        data.popularSections.forEach((s) => {
+          if (s.title && s.tag) {
+            tags.push({ label: s.title, query: s.tag });
+          }
+        });
+      }
+      if (tags.length > 0) {
+        this.tagFilter.setTags(tags);
+        this.hasLoadedTrendingTags = true;
+      }
+    } catch {}
   }
 
   handleTagSelection(tag) {
@@ -333,6 +399,25 @@ class LotusApp {
       }
 
       this.loader.hideEmpty();
+      if (!this.hasLoadedTrendingTags && this.tagFilter.chips.length <= 1) {
+        const extracted = [];
+        const seen = new Set();
+        pins.forEach((p) => {
+          if (Array.isArray(p.tags)) {
+            p.tags.forEach((t) => {
+              const q = typeof t === "string" ? t : t.query;
+              const l = typeof t === "string" ? t : t.label;
+              if (q && !seen.has(q) && q.length > 3 && !/(hair|eyes|dress|skirt|highres|absurdres|1girl|1boy|solo)/i.test(q)) {
+                seen.add(q);
+                extracted.push({ label: l, query: q });
+              }
+            });
+          }
+        });
+        if (extracted.length > 0) {
+          this.tagFilter.setTags(extracted);
+        }
+      }
       this.pinList.renderPins(pins);
       this.currentPage += 1;
 
