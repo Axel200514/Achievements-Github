@@ -254,5 +254,60 @@ class LotusApp {
     await this.exploreComponent.render();
     this.loader.hide();
   }
+
+  showSavedView() {
+    this.fetchSeq += 1;
+    this.navbar.setActive(APP_ROUTES.saved);
+    this.categoriesContainer.classList.add("d-none");
+    if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
+    this.gridContainer.className = "pins-masonry";
+    this.currentMode = null;
+    this.hasMore = false;
+    this.pinList.clear();
+    this.loader.hide();
+    this.loader.hideEnd();
+    this.savedList.render();
+  }
+
+  handleSearch(query) {
+    const clean = (query || "").trim();
+    if (clean) {
+      this.router.navigate(`search=${encodeURIComponent(clean)}`);
+    } else {
+      this.router.navigate(APP_ROUTES.home);
+    }
+  }
+
+  handleTagSelection(tag) {
+    if (this.modal) {
+      if (typeof this.modal.closeForNavigation === "function") {
+        this.modal.closeForNavigation();
+      } else {
+        this.modal.close();
+      }
+    }
+    this.router.navigate(`search=${encodeURIComponent(tag)}`);
+  }
+
+  async fetchMorePins(reset = false) {
+    if (this.isLoading && !reset) return;
+    if (!this.hasMore && !reset) return;
+
+    this.isLoading = true;
+    this.loader.show();
+    this.loader.hideEmpty();
+
+    this.fetchSeq += 1;
+    const currentSeq = this.fetchSeq;
+
+    try {
+      let result;
+      if (this.currentMode === "topic") {
+        result = await this.pinService.getTopicPins(
+          this.currentQuery,
+          this.currentPage,
+          API_CONFIG.defaultLimit
+        );
+  }
 }
 const app = new App();
