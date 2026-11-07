@@ -63,5 +63,71 @@ class LotusApp {
     this.exploreComponent = new ExploreMainComponent(
       this.gridContainer,
       (tag, title) => this.router.navigate(`explore?topic=${encodeURIComponent(tag)}&title=${encodeURIComponent(title || tag)}`)
+    );
+
+    this.searchBar = new SearchBarComponent(
+      this.searchInput,
+      this.searchClear,
+      (query) => this.handleSearch(query)
+    );
+
+    this.tagFilter = new TagFilterComponent(
+      this.categoriesContainer,
+      (tag) => {
+        if (tag) {
+          this.router.navigate(`topic=${encodeURIComponent(tag)}`);
+        } else {
+          this.router.navigate(APP_ROUTES.home);
+        }
+      }
+    );
+
+    this.navbar = new NavbarComponent((route) => {
+      this.router.navigate(route);
+    });
+
+    if (this.exploreBackBtn) {
+      this.exploreBackBtn.addEventListener("click", () => {
+        this.router.navigate(APP_ROUTES.explore);
+      });
+    }
+
+    this.observer = null;
+    this.initRouter();
+    this.initIntersectionObserver();
+    window._app = this;
+  }
+
+  initRouter() {
+    this.router = new AppRouter({
+      [APP_ROUTES.home]: () => this.showFeedView(),
+      [APP_ROUTES.explore]: () => this.showExploreView(),
+      explore: () => this.showExploreView(),
+      explorar: () => this.showExploreView(),
+      [APP_ROUTES.saved]: () => this.showSavedView(),
+      saved: () => this.showSavedView(),
+      guardados: () => this.showSavedView(),
+      exploreTopic: (topic, title) => this.showExploreTopicView(topic, title),
+      homeTopic: (topic) => this.showHomeTopicView(topic),
+      search: (query) => this.showSearchView(query),
+      pin: (pinId) => this.showPinModalById(pinId),
+      default: () => this.showFeedView()
+    });
+  }
+
+  async showPinModalById(pinId) {
+    if (!pinId) return;
+
+    if (this.pinList.renderedPins.length === 0) {
+      this.showFeedView();
+    }
+
+    const existing = this.pinList.renderedPins.find((p) => p.id === pinId)
+      || this.savedService.getAllSaved().find((p) => p.id === pinId);
+
+    if (existing) {
+      this.modal.open(existing, this.savedService.isSaved(existing.id));
+      history.replaceState(null, document.title, window.location.pathname + window.location.search);
+  }
 }
 const app = new App();
