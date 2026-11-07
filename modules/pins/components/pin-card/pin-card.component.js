@@ -12,6 +12,10 @@ export class PinCardComponent {
     const authorEl = clone.querySelector(".pin-author");
     const shareBtn = clone.querySelector(".pin-share-btn");
 
+    if (mediaWrapper && pin.width && pin.height) {
+      mediaWrapper.style.aspectRatio = `${pin.width} / ${pin.height}`;
+    }
+
     img.referrerPolicy = "no-referrer";
     img.loading = "lazy";
     img.decoding = "async";
@@ -24,6 +28,11 @@ export class PinCardComponent {
     };
 
     img.addEventListener("load", onImageLoaded, { once: true });
+    img.onerror = () => {
+      if (pin.sampleUrl && img.src !== pin.sampleUrl) {
+        img.src = pin.sampleUrl;
+      }
+    };
     img.src = pin.previewUrl;
 
     if (img.complete && img.naturalWidth > 0) {

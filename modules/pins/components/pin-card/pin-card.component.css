@@ -3,7 +3,6 @@
   cursor: pointer;
   position: relative;
   background-color: transparent;
-  will-change: transform;
   transition: transform var(--transition-spring);
   -webkit-tap-highlight-color: transparent;
 }
@@ -34,6 +33,7 @@
   opacity: 0;
   transform: scale(0.96);
   transition: opacity 200ms cubic-bezier(0.2, 0, 0, 1), transform 220ms cubic-bezier(0.2, 0, 0, 1);
+  image-rendering: auto;
 }
 
 .pin-image.loaded {
