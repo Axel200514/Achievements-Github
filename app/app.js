@@ -193,6 +193,66 @@ class LotusApp {
     this.loader.hideEnd();
     this.loader.hideEmpty();
     this.pinService.resetTopicSession();
+    this.fetchMorePins(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  showExploreTopicView(topic, title) {
+    this.navbar.setActive(APP_ROUTES.explore);
+    this.categoriesContainer.classList.add("d-none");
+    if (this.exploreHeader) {
+      this.exploreHeader.classList.remove("d-none");
+      if (this.exploreTopicTitle) {
+        this.exploreTopicTitle.textContent = title || topic;
+      }
+    }
+    this.gridContainer.className = "pins-masonry";
+    this.currentQuery = topic;
+    this.currentMode = "topic";
+    this.currentPage = 1;
+    this.hasMore = true;
+    this.searchBar.setValue("");
+    this.pinList.clear();
+    this.loader.hideEnd();
+    this.loader.hideEmpty();
+    this.pinService.resetTopicSession();
+    this.fetchMorePins(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  showSearchView(query) {
+    this.navbar.setActive(APP_ROUTES.home);
+    this.categoriesContainer.classList.remove("d-none");
+    if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
+    this.gridContainer.className = "pins-masonry";
+    this.currentQuery = query;
+    this.currentMode = "search";
+    this.currentPage = 1;
+    this.hasMore = true;
+    this.searchBar.setValue(query.replace(/_/g, " "));
+    this.tagFilter.selectByTag(query);
+    this.pinList.clear();
+    this.loader.hideEnd();
+    this.loader.hideEmpty();
+    this.pinService.resetSearchSession();
+    this.fetchMorePins(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async showExploreView() {
+    this.fetchSeq += 1;
+    this.navbar.setActive(APP_ROUTES.explore);
+    this.categoriesContainer.classList.add("d-none");
+    if (this.exploreHeader) this.exploreHeader.classList.add("d-none");
+    this.gridContainer.className = "explore-wrapper";
+    this.currentMode = null;
+    this.hasMore = false;
+    this.pinList.clear();
+    this.loader.show();
+    this.loader.hideEnd();
+    this.loader.hideEmpty();
+    await this.exploreComponent.render();
+    this.loader.hide();
   }
 }
 const app = new App();
