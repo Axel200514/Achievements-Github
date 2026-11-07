@@ -443,9 +443,6 @@ export class PinService {
     if (primaryArtist && !anchorsPool.includes(primaryArtist)) {
       anchorsPool.unshift(primaryArtist);
     }
-    if (anchorsPool.length === 0) {
-      anchorsPool.push("waifu");
-    }
 
     return {
       primarySeries: seriesTags[0] || null,
@@ -458,12 +455,23 @@ export class PinService {
   async getRelatedPins(pin, page = 1, limit = 8, excludeIds = null) {
     if (!pin) return [];
 
+    const cacheKey = `rel_${pin.id}_${page}_${limit}`;
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
     const anchors = this.determinePinAnchors(pin);
     const results = [];
     const collectedIds = new Set(excludeIds ? [...excludeIds] : []);
     collectedIds.add(pin.id);
 
+    const pinNum = parseInt(String(pin.id).replace(/\D/g, ""), 10) || 1;
+    const seedOffset = (pinNum % 12);
+
     const queryTags = [];
+    if (anchors.primaryCharacter && anchors.primarySeries) {
+      queryTags.push(`${anchors.primaryCharacter}+${anchors.primarySeries}`);
+    }
     if (anchors.primaryCharacter) {
       queryTags.push(anchors.primaryCharacter);
     }
@@ -478,15 +486,6 @@ export class PinService {
         queryTags.push(a);
       }
     }
-    if (!queryTags.includes("waifu")) {
-      queryTags.push("waifu");
-    }
-    if (!queryTags.includes("solo")) {
-      queryTags.push("solo");
-    }
-    if (!queryTags.includes("1girl")) {
-      queryTags.push("1girl");
-    }
 
     const fetchAmount = Math.max(12, limit * 2);
 
@@ -494,7 +493,7 @@ export class PinService {
       if (results.length >= limit) break;
       const tag = queryTags[i];
       const clean = tag.replace(/\s+/g, "_").replace(/[*]+/g, "");
-      const targetPage = page + (i * 2);
+      const targetPage = page + seedOffset + (i * 2);
       const url = `${API_CONFIG.safebooruProxyEndpoint}?tags=${encodeURIComponent(clean)}&page=${targetPage}&limit=${fetchAmount}`;
 
       try {
@@ -522,32 +521,8 @@ export class PinService {
       } catch {}
     }
 
-    if (results.length < limit) {
-      const fallbackOffset = (page * 2) + 12;
-      const fallbackUrl = `${API_CONFIG.safebooruProxyEndpoint}?tags=solo&page=${fallbackOffset}&limit=${fetchAmount}`;
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4500);
-        const res = await fetch(fallbackUrl, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const text = await res.text();
-          const safeText = (text || "").trim();
-          if (safeText.startsWith("[")) {
-            const data = JSON.parse(safeText);
-            if (Array.isArray(data) && data.length > 0) {
-              const mapped = data.map((item) => PinModel.fromSafebooru(item));
-              for (const item of mapped) {
-                if (!collectedIds.has(item.id)) {
-                  collectedIds.add(item.id);
-                  results.push(item);
-                  if (results.length >= limit) break;
-                }
-              }
-            }
-          }
-        }
-      } catch {}
+    if (results.length > 0) {
+      this.cache.set(cacheKey, results);
     }
 
     return results;
