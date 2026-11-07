@@ -42,6 +42,7 @@ export class ModalComponent {
     this.relatedLoader = document.getElementById("modal-related-loader");
     this.sentinel = document.getElementById("modal-related-sentinel");
     this.relatedCardTemplate = document.getElementById("modal-related-card-template");
+    this.imgSpinner = document.getElementById("modal-img-spinner");
     window._modal = this;
 
     this.bindEvents();
@@ -86,12 +87,6 @@ export class ModalComponent {
       if (!this.isOpen) return;
       if (this.scrollCue) {
         this.scrollCue.classList.toggle("hide", this.backdrop.scrollTop > 100);
-      }
-
-      if (this.isLoadingRelated || !this.hasMoreRelated) return;
-      const scrollRemaining = this.backdrop.scrollHeight - (this.backdrop.scrollTop + this.backdrop.clientHeight);
-      if (scrollRemaining < 650) {
-        this.loadNextRelatedBatch();
       }
     };
 
@@ -153,7 +148,7 @@ export class ModalComponent {
       },
       {
         root: this.backdrop,
-        rootMargin: "500px 0px"
+        rootMargin: "150px 0px"
       }
     );
     this.sentinelObserver.observe(this.sentinel);
@@ -223,6 +218,7 @@ export class ModalComponent {
       this.backdrop.classList.add("open");
     }
 
+    this.resetModalScroll();
     this.renderPin(pin, isSaved);
   }
 
@@ -231,9 +227,38 @@ export class ModalComponent {
     this.activePin = pin;
     this.seenPinIds.add(pin.id);
 
+    if (this.imgSpinner) {
+      this.imgSpinner.classList.remove("d-none");
+    }
+
     this.img.referrerPolicy = "no-referrer";
     this.img.alt = pin.title;
+
+    this.img.onload = () => {
+      if (this.imgSpinner) {
+        this.imgSpinner.classList.add("d-none");
+      }
+    };
+
+    this.img.onerror = () => {
+      if (pin.sampleUrl && this.img.src !== pin.sampleUrl) {
+        this.img.src = pin.sampleUrl;
+      } else if (pin.fullUrl && this.img.src !== pin.fullUrl) {
+        this.img.src = pin.fullUrl;
+      } else {
+        if (this.imgSpinner) {
+          this.imgSpinner.classList.add("d-none");
+        }
+      }
+    };
+
     this.img.src = pin.previewUrl;
+
+    if (this.img.complete && this.img.naturalWidth > 0) {
+      if (this.imgSpinner) {
+        this.imgSpinner.classList.add("d-none");
+      }
+    }
 
     if (pin.fullUrl && pin.fullUrl !== pin.previewUrl) {
       const nativeImg = new Image();
@@ -433,14 +458,9 @@ export class ModalComponent {
       });
 
       if (uniqueRelated.length === 0) {
-        if (this.relatedPage < 6) {
-          this.relatedPage += 1;
-          await this.loadRelatedPins(pin, false);
-        } else {
-          this.hasMoreRelated = false;
-          const entry = this.relatedCache.get(pin.id);
-          if (entry) entry.hasMore = false;
-        }
+        this.hasMoreRelated = false;
+        const entry = this.relatedCache.get(pin.id);
+        if (entry) entry.hasMore = false;
         return;
       }
 
