@@ -1,32 +1,51 @@
 import { ExploreService } from "../../services/explore.service.js";
+import { StorageUtils } from "../../../shared/utils/storage.utils.js";
 
 export class ExploreMainComponent {
-  constructor(container, onTopicSelect) {
+  constructor(container, onTopicSelect, service = null) {
     this.container = container;
     this.onTopicSelect = onTopicSelect;
-    this.service = new ExploreService();
+    this.service = service || new ExploreService();
     this.boardTemplate = document.getElementById("explore-board-card-template");
     this.popularTemplate = document.getElementById("explore-popular-section-template");
     this.thumbTemplate = document.getElementById("explore-popular-thumb-template");
+    this.recentTemplate = document.getElementById("explore-recent-searches-template");
+    this.ideasTemplate = document.getElementById("explore-ideas-template");
+    this.ideaCardTemplate = document.getElementById("explore-idea-card-template");
   }
 
   async render() {
     this.container.textContent = "";
 
-    const [boards, popularSections] = await Promise.all([
+    const [boards, popularSections, ideas] = await Promise.all([
       this.service.getFeaturedBoards(),
-      this.service.getPopularSections()
+      this.service.getPopularSections(),
+      this.service.getIdeasForYou()
     ]);
+
+    const recentSearches = StorageUtils.getRecentSearches();
 
     const wrapper = document.createElement("div");
     wrapper.className = "explore-container";
 
     const fragment = document.createDocumentFragment();
 
-    const boardsSection = this.buildFeaturedBoards(boards);
-    fragment.appendChild(boardsSection);
+    if (Array.isArray(recentSearches) && recentSearches.length > 0) {
+      const recentSection = this.buildRecentSearchesSection(recentSearches);
+      if (recentSection) fragment.appendChild(recentSection);
+    }
 
-    const validSections = popularSections.filter((s) => Array.isArray(s.thumbnails) && s.thumbnails.length >= 6);
+    if (Array.isArray(ideas) && ideas.length > 0) {
+      const ideasSection = this.buildIdeasForYouSection(ideas);
+      if (ideasSection) fragment.appendChild(ideasSection);
+    }
+
+    if (Array.isArray(boards) && boards.length > 0) {
+      const boardsSection = this.buildFeaturedBoards(boards);
+      if (boardsSection) fragment.appendChild(boardsSection);
+    }
+
+    const validSections = popularSections.filter((s) => Array.isArray(s.thumbnails) && s.thumbnails.length >= 4);
     validSections.forEach((section) => {
       const sectionNode = this.buildPopularSection(section);
       fragment.appendChild(sectionNode);
@@ -34,9 +53,90 @@ export class ExploreMainComponent {
 
     wrapper.appendChild(fragment);
     this.container.appendChild(wrapper);
+    return Array.isArray(boards) && boards.length > 0;
+  }
+
+  buildRecentSearchesSection(searches) {
+    if (!this.recentTemplate) return null;
+    const clone = this.recentTemplate.content.cloneNode(true);
+    const section = clone.querySelector(".explore-recent-section");
+    const chipsRow = clone.querySelector(".recent-chips-row");
+    const clearBtn = clone.querySelector(".recent-clear-btn");
+
+    clearBtn.addEventListener("click", () => {
+      StorageUtils.clearRecentSearches();
+      section.remove();
+    });
+
+    searches.forEach((query) => {
+      const chip = document.createElement("div");
+      chip.className = "recent-chip";
+
+      const text = document.createElement("span");
+      text.className = "recent-chip-text";
+      text.textContent = query;
+      text.addEventListener("click", () => {
+        if (typeof this.onTopicSelect === "function") {
+          this.onTopicSelect(query, query);
+        }
+      });
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "recent-chip-remove";
+      removeBtn.textContent = "×";
+      removeBtn.title = `Eliminar ${query}`;
+      removeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        StorageUtils.removeRecentSearch(query);
+        chip.remove();
+        if (chipsRow.children.length === 0) {
+          section.remove();
+        }
+      });
+
+      chip.appendChild(text);
+      chip.appendChild(removeBtn);
+      chipsRow.appendChild(chip);
+    });
+
+    return section;
+  }
+
+  buildIdeasForYouSection(ideas) {
+    if (!this.ideasTemplate || !this.ideaCardTemplate) return null;
+    const clone = this.ideasTemplate.content.cloneNode(true);
+    const section = clone.querySelector(".explore-ideas-section");
+    const grid = clone.querySelector(".ideas-grid");
+    const fragment = document.createDocumentFragment();
+
+    ideas.forEach((idea) => {
+      const cardClone = this.ideaCardTemplate.content.cloneNode(true);
+      const card = cardClone.querySelector(".idea-card");
+      const img = cardClone.querySelector(".idea-img");
+      const title = cardClone.querySelector(".idea-title");
+      const badge = cardClone.querySelector(".idea-badge");
+
+      img.src = idea.previewUrl;
+      img.alt = idea.title;
+      title.textContent = idea.title;
+      badge.textContent = idea.badge || "Idea for you";
+
+      card.addEventListener("click", () => {
+        if (typeof this.onTopicSelect === "function") {
+          this.onTopicSelect(idea.query, idea.title);
+        }
+      });
+
+      fragment.appendChild(cardClone);
+    });
+
+    grid.appendChild(fragment);
+    return section;
   }
 
   buildFeaturedBoards(boards) {
+    if (!this.boardTemplate || !Array.isArray(boards) || boards.length === 0) return null;
     const section = document.createElement("section");
 
     const header = document.createElement("div");
@@ -66,12 +166,21 @@ export class ExploreMainComponent {
 
       mainImg.src = board.previews[0];
       mainImg.alt = board.title;
+      mainImg.onerror = () => {
+        if (board.previews[1]) mainImg.src = board.previews[1];
+      };
 
       sub1.src = board.previews[1] || board.previews[0];
       sub1.alt = board.title;
+      sub1.onerror = () => {
+        if (board.previews[0]) sub1.src = board.previews[0];
+      };
 
       sub2.src = board.previews[2] || board.previews[0];
       sub2.alt = board.title;
+      sub2.onerror = () => {
+        if (board.previews[0]) sub2.src = board.previews[0];
+      };
 
       bTitle.textContent = board.title;
       bAuthorName.textContent = `${board.author} `;
@@ -105,18 +214,23 @@ export class ExploreMainComponent {
 
     item.thumbnails.forEach((thumb) => {
       const thumbClone = this.thumbTemplate.content.cloneNode(true);
+      const wrapper = thumbClone.querySelector(".popular-thumb-wrapper");
       const img = thumbClone.querySelector(".popular-thumb");
 
       const src = typeof thumb === "string" ? thumb : thumb.url;
       const w = typeof thumb === "object" ? Number(thumb.width) : 0;
       const h = typeof thumb === "object" ? Number(thumb.height) : 0;
 
-      img.loading = "lazy";
-      img.decoding = "async";
       img.width = w || 240;
       img.height = h || 320;
       img.src = src;
       img.alt = item.title;
+
+      img.onerror = () => {
+        if (wrapper && wrapper.parentNode) {
+          wrapper.remove();
+        }
+      };
 
       thumbsFragment.appendChild(thumbClone);
     });
