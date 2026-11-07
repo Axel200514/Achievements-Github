@@ -203,9 +203,78 @@
       </section>
     </div>
   </div>
+
+  <div class="toast-notification d-none" id="toast-notification" role="status" aria-live="polite"></div>
+
+  <template id="modal-related-card-template">
+    <div class="modal-related-card">
+      <img class="modal-related-img" src="" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+    </div>
+  </template>
+
+  <template id="pin-card-template">
+    <article class="pin-card">
+      <div class="pin-media-wrapper">
+        <img class="pin-image" src="" alt="" decoding="async" referrerpolicy="no-referrer">
+        <div class="pin-overlay">
+          <button class="pin-action-circle pin-share-btn" type="button" title="Share illustration">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </button>
         </div>
       </div>
+      <div class="pin-meta">
+        <h3 class="pin-title"></h3>
+        <p class="pin-author"></p>
+      </div>
+    </article>
+  </template>
+
+  <template id="explore-board-card-template">
+    <article class="board-card">
+      <div class="board-collage">
+        <img class="board-main-img" src="" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+        <div class="board-sub-imgs">
+          <img class="board-sub-img board-sub-1" src="" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+          <img class="board-sub-img board-sub-2" src="" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+        </div>
+      </div>
+      <div class="board-meta">
+        <h3 class="board-title"></h3>
+        <p class="board-author"><span class="author-name"></span><span class="author-badge">✓</span></p>
+        <p class="board-stats"></p>
+      </div>
+    </article>
+  </template>
+
+  <template id="explore-popular-section-template">
+    <section>
+      <div class="explore-section-header">
+        <div class="explore-section-title">
+          <span class="explore-popular-title"></span>
+          <button type="button" class="explore-search-shortcut">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="popular-row"></div>
+    </section>
+  </template>
+
+  <template id="explore-popular-thumb-template">
+    <div class="popular-thumb-wrapper">
+      <img class="popular-thumb" src="" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
     </div>
-  </dialog>
+  </template>
+
+  <script type="module" src="./app/app.js"></script>
 </body>
 </html>
