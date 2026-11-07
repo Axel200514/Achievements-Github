@@ -133,6 +133,79 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                   <polyline points="15 3 21 3 21 9"></polyline>
-  </main>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+              <button class="modal-action-btn" id="modal-download-btn" type="button" title="Open high-resolution image">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </button>
+              <button class="modal-action-btn" id="modal-share-btn" type="button" title="Share illustration">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+              </button>
+            </div>
+            <button class="modal-save-btn" id="modal-save-btn" type="button">Save</button>
+          </div>
+
+          <h1 class="modal-title" id="modal-title"></h1>
+
+          <div class="modal-author-row">
+            <div class="modal-author-avatar" id="modal-author-avatar">A</div>
+            <div>
+              <a class="modal-author-name" id="modal-author" target="_blank" rel="noopener noreferrer"></a>
+              <div class="text-muted modal-author-platform" id="modal-author-platform">Verified Artist</div>
+            </div>
+          </div>
+
+          <div class="modal-meta-grid">
+            <div class="modal-meta-item">
+              Dimensions
+              <strong id="modal-dimensions"></strong>
+            </div>
+            <div class="modal-meta-item">
+              Image ID
+              <strong id="modal-id"></strong>
+            </div>
+          </div>
+
+          <div class="modal-tags-container">
+            <span class="modal-tags-label">Tags</span>
+            <div class="modal-tags-list" id="modal-tags"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-divider" aria-hidden="true"></div>
+
+      <button class="modal-scroll-cue" id="modal-scroll-cue" type="button" aria-label="More to explore">
+        <span>More to explore</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+
+      <section class="modal-related-section" id="modal-related-container" aria-label="Suggestions">
+        <h2 class="modal-related-title" id="modal-related-title">Suggestions</h2>
+        <div class="modal-related-grid" id="modal-related-grid"></div>
+        <div class="modal-related-loader" id="modal-related-loader">
+          <div class="spinner"></div>
+        </div>
+        <div class="modal-related-sentinel" id="modal-related-sentinel"></div>
+      </section>
+    </div>
+  </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
 </body>
 </html>
