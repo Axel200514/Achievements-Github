@@ -10,6 +10,7 @@ export class PinModel {
     this.title = data.title || (data.author ? `Illustration by ${data.author}` : "Digital Illustration");
     this.previewUrl = data.previewUrl || "";
     this.fullUrl = data.fullUrl || this.previewUrl;
+    this.sampleUrl = data.sampleUrl || this.previewUrl;
     this.width = Number(data.width) || 1200;
     this.height = Number(data.height) || 1600;
     this.tags = Array.isArray(data.tags) ? data.tags : [];
@@ -44,8 +45,10 @@ export class PinModel {
       .replace(/_/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
-    const full = item.file_url || item.sample_url || item.preview_url || "";
-    const preview = item.sample_url || item.file_url || item.preview_url || "";
+    const fileUrl = item.file_url || (item.directory && item.image ? `https://safebooru.org/images/${item.directory}/${item.image}` : "");
+    const sampleUrl = item.sample_url || (item.sample && item.directory && item.image ? `https://safebooru.org/samples/${item.directory}/sample_${item.image.replace(/\.[^.]+$/, ".jpg")}` : fileUrl);
+    const full = fileUrl || sampleUrl || item.preview_url || "";
+    const preview = sampleUrl || fileUrl || item.preview_url || "";
     const formattedTags = rawTags.slice(0, 24).map((t) => ({
       label: t.replace(/_/g, " "),
       query: t
@@ -119,6 +122,7 @@ export class PinModel {
       title: cleanTitle,
       previewUrl: preview,
       fullUrl: full,
+      sampleUrl: sampleUrl,
       width: Number(item.width) || 1200,
       height: Number(item.height) || 1600,
       tags: formattedTags,
